@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>67-ify • Demo</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0f1114;
+      --panel:#111318;
+      --muted:#9aa3a8;
+      --accent:#1db954; /* green-ish accent (not Spotify logos) */
+      --glass: rgba(255,255,255,0.03);
+      --card:#15171a;
+      --radius:12px;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color-scheme: dark;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#0b0c0e 0%, #0f1114 100%);color:#e7eef1}
+    .app{
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: 1fr 88px;
+      gap:18px;
+      min-height:100vh;
+      padding:28px;
+    }
+
+    /* DISCLAIMER bar (top left) */
+    .demo-badge{
+      grid-column: 1 / -1;
+      align-self:start;
+      margin-bottom:6px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      padding:8px 14px;
+      border-radius:999px;
+      color:var(--muted);
+      font-size:13px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .demo-badge strong{color:#fff;font-weight:600;margin-left:6px}
+
+    /* Sidebar */
+    .sidebar{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:18px;
+      height: calc(100vh - 172px);
+      overflow:auto;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .logo{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+    .logo .mark{
+      width:44px;height:44px;border-radius:10px;
+      background: conic-gradient(from 120deg, #49f28a, #34b57e, #8ef1c2);
+      display:flex;align-items:center;justify-content:center;
+      color:#07110a;font-weight:700;font-size:16px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 -6px 14px rgba(255,255,255,0.03);
+    }
+    .logo h1{font-size:18px;margin:0;font-weight:700}
+    .logo p{margin:0;font-size:12px;color:var(--muted)}
+
+    .nav{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .nav a{
+      display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:600;
+    }
+    .nav a:hover{background:rgba(255,255,255,0.02);color:#fff}
+
+    .playlists{margin-top:16px;border-top:1px dashed rgba(255,255,255,0.02);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+    .playlist{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    /* Main content */
+    .main{
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:20px;
+      height: calc(100vh - 172px);
+      overflow:auto;
+      border-radius:var(--radius);
+      border:1px solid rgba(255,255,255,0.02);
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    }
+
+    .hero{
+      display:flex;gap:18px;align-items:center;
+    }
+    .hero .cover{
+      width:170px;height:170px;border-radius:12px;background:linear-gradient(135deg,#1ecf8f,#4ad7a8);
+      display:flex;align-items:center;justify-content:center;font-weight:800;font-size:26px;color:#01210f;
+      box-shadow: 0 10px 30px rgba(12,18,14,0.6);
+    }
+    .hero .meta h2{margin:0;font-size:22px}
+    .hero .meta p{color:var(--muted);margin-top:8px}
+
+    .controls{display:flex;gap:12px;margin-top:12px}
+    .btn{
+      background:var(--accent);color:#02160f;padding:10px 16px;border-radius:22px;border:none;font-weight:700;cursor:pointer;
+      box-shadow: 0 8px 18px rgba(27,120,67,0.12);
+    }
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);font-weight:600}
+
+    /* Grid of cards */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px,1fr));
+      gap:14px;
+      margin-top:6px;
+    }
+    .card{
+      background:var(--card);border-radius:12px;padding:12px;display:flex;gap:12px;align-items:center;border:1px solid rgba(255,255,255,0.02);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(2,6,4,0.6)}
+    .thumb{width:64px;height:64px;border-radius:8px;background:linear-gradient(135deg,#7be3b2,#2bc081)}
+    .card h3{margin:0;font-size:15px}
+    .card p{margin:0;color:var(--muted);font-size:13px}
+
+    /* Bottom player */
+    .player{
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.03);
+    }
+    .player .now{display:flex;gap:12px;align-items:center}
+    .player .now .thumb{width:48px;height:48px;border-radius:8px}
+    .player .progress{width:48%;height:6px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+    .progress .bar{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),#7de0b0)}
+    .player .controls{display:flex;gap:10px;align-items:center}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:960px){
+      .app{grid-template-columns: 1fr;grid-template-rows:auto 1fr 88px;padding:16px}
+      .sidebar{height:auto;order:2}
+      .main{order:1;height:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="app" role="application" aria-label="67-ify demo app">
+    
+
+    <aside class="sidebar" aria-label="Sidebar">
+      <div class="logo" role="img" aria-label="67-ify logo">
+        <div class="mark">67</div>
+        <div>
+          <h1>67‑ify</h1>
+          <p class="small">music demo • visual only</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Primary navigation">
+        <a href="#" onclick="return false;"><span>🏠</span> Home</a>
+        <a href="#" onclick="return false;"><span>🔎</span> Search</a>
+        <a href="#" onclick="return false;"><span>📚</span> Your Library</a>
+      </nav>
+
+      <div class="playlists" aria-label="Playlists">
+        <div class="small" style="color:var(--muted);margin-bottom:8px">Playlists</div>
+        <div class="playlist">Morning Breeze</div>
+        <div class="playlist">Late Night Code</div>
+        <div class="playlist">Focus: Instrumentals</div>
+        <div class="playlist">Top Vibes 67</div>
+      </div>
+    </aside>
+
+    <main class="main" aria-label="Main content">
+      <section class="hero" aria-label="Hero">
+        <div class="cover" aria-hidden="true">67</div>
+        <div class="meta">
+          <h2>Top Vibes • 67 Picks</h2>
+          <p class="small">A curated selection of energetic and chill tracks for coding, commuting, and everything in between.</p>
+
+          <div class="controls" style="margin-top:12px;">
+            <button class="btn" id="playBtn" aria-pressed="false">► Play</button>
+            <button class="btn secondary" onclick="alert('This demo does not play real music')" aria-hidden="false">+ Add to library</button>
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="Tiles">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <h3 style="margin:0">Popular this week</h3>
+          <div class="small" style="color:var(--muted)">Showing 6</div>
+        </div>
+
+        <div class="grid" id="cards">
+          <!-- cards generated by JS for variety -->
+        </div>
+      </section>
+    </main>
+
+    <div class="player" role="region" aria-label="Player">
+      <div class="now">
+        <div class="thumb"></div>
+        <div style="min-width:180px">
+          <div style="font-weight:700">No audio (demo)</div>
+          <div class="small">Artist • Album</div>
+        </div>
+      </div>
+
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px">
+        <div class="controls">
+          <button class="btn secondary" onclick="prevTrack()" title="Previous">⏮</button>
+          <button class="btn" id="miniPlay">►</button>
+          <button class="btn secondary" onclick="nextTrack()" title="Next">⏭</button>
+        </div>
+        <div style="width:90%;display:flex;gap:12px;align-items:center">
+          <div class="small">0:00</div>
+          <div class="progress" aria-hidden="true"><div class="bar" id="bar"></div></div>
+          <div class="small">3:12</div>
+        </div>
+      </div>
+
+      <div style="width:200px;text-align:right" class="small">Demo • Not streaming</div>
+    </div>
+  </div>
+
+  <script>
+    // Small JS to populate cards and fake progress animation
+    const sample = [
+      {title:"Sunrise Code", artist:"Neon Bay"},
+      {title:"Midnight Snack", artist:"Paper Skies"},
+      {title:"Cloud Drift", artist:"Asteria"},
+      {title:"City Lights", artist:"M. Rios"},
+      {title:"Binary Heart", artist:"67 Collective"},
+      {title:"Velvet Loop", artist:"Echo Lane"},
+      {title:"Orbitals", artist:"Solaire"},
+      {title:"Soft Static", artist:"LoFi Lab"}
+    ];
+
+    const grid = document.getElementById('cards');
+    sample.slice(0,6).forEach((s,i)=>{
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="thumb" style="background:linear-gradient(135deg, hsl(${i*45+120}deg 70% 60%), hsl(${i*45+160}deg 55% 55%));"></div>
+        <div style="flex:1">
+          <h3>${s.title}</h3>
+          <p class="small">${s.artist}</p>
+        </div>
+        <button class="btn secondary" onclick="alert('Preview disabled in demo')">Preview</button>
+      `;
+      grid.appendChild(card);
+    });
+
+    // fake player progress
+    let playing = false;
+    let progress = 0;
+    const bar = document.getElementById('bar');
+    const playBtn = document.getElementById('playBtn');
+    const miniPlay = document.getElementById('miniPlay');
+
+    function setPlaying(p){
+      playing = p;
+      playBtn.textContent = p ? '❚❚ Pause' : '► Play';
+      miniPlay.textContent = p ? '❚❚' : '►';
+      playBtn.setAttribute('aria-pressed', String(p));
+    }
+
+    playBtn.addEventListener('click', () => {
+      setPlaying(!playing);
+    });
+    miniPlay.addEventListener('click', () => {
+      setPlaying(!playing);
+    });
+
+    function tick(){
+      if(playing){
+        progress += 0.5; // pretend 0.5% per tick
+        if(progress > 100) progress = 0;
+        bar.style.width = progress + '%';
+      }
+      requestAnimationFrame(tick);
+    }
+    tick();
+
+    function prevTrack(){ alert('Prev track — demo only') }
+    function nextTrack(){ alert('Next track — demo only') }
+
+    // Accessibility: keyboard support for fake player
+    document.addEventListener('keydown', (e)=>{
+      if(e.code === 'Space'){
+        e.preventDefault();
+        setPlaying(!playing);
+      }else if(e.key === 'ArrowLeft') prevTrack();
+      else if(e.key === 'ArrowRight') nextTrack();
+    });
+
+  </script>
+</body>
+</html>
